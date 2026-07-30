@@ -58,7 +58,15 @@ while ($true) {
         git add -- $FileName | Out-Null
         $msg = "Auto-backup: dictionary updated $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
         git commit -m $msg | Out-Null
-        $pushOutput = git push 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log "commit failed (exit $LASTEXITCODE)"
+            continue
+        }
+        $pushOutput = git push origin main 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log "PUSH FAILED (exit $LASTEXITCODE): $($pushOutput -join ' | ')"
+            continue
+        }
         Write-Log "pushed: $msg"
         $lastPushHash = $hash
     } catch {
